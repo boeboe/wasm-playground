@@ -5,14 +5,13 @@ The `geo-service` is a Go program that provides functionality to download and ex
 ## Table of Contents
 
 - [Overview](#overview)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
+- [Configuration](#configuration)
   - [Environment Variables](#environment-variables)
   - [Command Line Flags](#command-line-flags)
 - [Usage](#usage)
   - [Running in Daemon Mode](#running-in-daemon-mode)
   - [Running in One-Time Mode](#running-in-one-time-mode)
-- [Configuration](#configuration)
+  - [Running in Kubernetes](#running-in-kubernetes)
 - [License](#license)
 
 ## Overview
@@ -23,13 +22,7 @@ The `geo-service` program performs the following tasks:
 2. Downloads and extracts the database files to a specified folder.
 3. Optionally, it can run in daemon mode to continuously check for new updates.
 
-## Getting Started
-
-### Prerequisites
-
-Before using the `geo-service` program, make sure you have the following prerequisites:
-
-- Go programming language installed on your system.
+## Configuration
 
 ### Environment Variables
 
@@ -68,8 +61,26 @@ To run the geo-service program in one-time mode (to download and extract databas
 
 This will perform a one-time download and extraction of the database files.
 
-## Configuration
-You can customize the program's behavior by setting environment variables or using command-line flags as mentioned in the Environment Variables and Command Line Flags sections.
+### Running in Kubernetes
 
-## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+In this section, we will discuss how to deploy your application in Kubernetes using both a CronJob or a Deployment.
+
+**Using CronJob**
+
+A CronJob is used to run tasks on a schedule, similar to a cron job in a Unix-like environment. In Kubernetes, you can use a CronJob to schedule periodic tasks, such as batch jobs, backups, or data processing.
+
+To deploy your application using a CronJob, modify the example [cronjob manifest](kubernetes/cronjob.yaml) and apply:
+
+```bash
+kubectl apply -f kubernetes/cronjob.yaml
+```
+
+**Using Deployment**
+
+A Deployment in Kubernetes is used for deploying and managing long-running applications, ensuring they are always available.
+
+To deploy your application using a Deployment, modify the example [deployment manifest](kubernetes/deployment.yaml) and apply:
+
+```bash
+kubectl apply -f kubernetes/deployment.yaml
+```
