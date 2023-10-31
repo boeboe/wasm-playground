@@ -9,18 +9,15 @@ help: ## This help
 
 .PHONY: build lint test run release clean docker-build docker-run docker-stop docker-release 
 
-# Binary name for the application
-BINARY_NAME=geo-service
-BUILD_DIR=./build
+BINARY_NAME            := geo-service
+BUILD_DIR              := ./output
+CMD_ARGS               := --interval 5 --download-folder ${BUILD_DIR} --daemon true
+DOCKER_CONTAINER_NAME  := geo-service
+DOCKER_IMAGE_NAME      := boeboe/geo-service
+DOCKER_IMAGE_VERSION   ?= v1.0.0
+GITHUB_RELEASE_VERSION ?= v1.0.0
+GITHUB_REPO            := boeboe/wasm-playground
 
-# Docker parameters
-DOCKER_IMAGE_NAME=boeboe/geo-service
-DOCKER_IMAGE_VERSION=v1.0.0
-DOCKER_CONTAINER_NAME=geo-service
-
-# GitHub parameters
-GITHUB_REPO=boeboe/wasm-playground
-GITHUB_RELEASE_VERSION=v1.0.0
 
 build: ## Build the binary
 	@mkdir -p $(BUILD_DIR)
@@ -33,7 +30,7 @@ test: ## Run unit tests
 	go test -v ./...
 
 run: ## Run the application
-	go run main.go
+	go run main.go $(CMD_ARGS)
 
 release: ## Release the application on github release section
 	gh release create $(GITHUB_RELEASE_VERSION) $(BUILD_DIR)/$(BINARY_NAME) -R $(GITHUB_REPO) -t $(GITHUB_RELEASE_VERSION) -n "Release $(GITHUB_RELEASE_VERSION)"
@@ -46,7 +43,7 @@ docker-build: ## Build the docker image
 	docker tag $(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION) $(DOCKER_IMAGE_NAME):latest
 
 docker-run: ## Run the docker image
-	docker run -d --name $(DOCKER_CONTAINER_NAME) $(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION)
+	docker run -d --name $(DOCKER_CONTAINER_NAME) -v $(BUILD_DIR):/output $(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION) /$(BINARY_NAME) $(CMD_ARGS)
 
 docker-stop: ## Stop the docker image
 	docker stop $(DOCKER_CONTAINER_NAME)
@@ -55,4 +52,3 @@ docker-stop: ## Stop the docker image
 docker-release: ## Release the docker image on docker hub
 	docker push $(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION)
 	docker push $(DOCKER_IMAGE_NAME):latest
-
