@@ -1,4 +1,4 @@
-# geo-service
+# Geo Database Sync Service
 
 The `geo-service` is a Go program that provides functionality to download and extract GeoIP database files from db-ip.com. It can run in both daemon mode (continuous) and one-time mode, allowing you to customize its behavior according to your needs.
 
