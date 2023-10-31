@@ -117,7 +117,9 @@ func parseConfig() (Config, error) {
 	pflag.Int("interval", 10, "Ticker interval in seconds")
 	pflag.String("download-folder", "output", "Download folder path")
 	pflag.Bool("daemon", false, "Run the program in daemon mode (continuous)")
-	viper.BindPFlags(pflag.CommandLine)
+	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
+		return Config{}, err
+	}
 	pflag.Parse()
 	interval := viper.GetInt("interval")
 	downloadFolder := viper.GetString("download-folder")

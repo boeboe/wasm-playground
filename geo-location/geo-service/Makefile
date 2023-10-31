@@ -18,22 +18,36 @@ DOCKER_IMAGE_VERSION   ?= v1.0.0
 GITHUB_RELEASE_VERSION ?= v1.0.0
 GITHUB_REPO            := boeboe/wasm-playground
 
-
-build: ## Build the binary
-	@mkdir -p $(BUILD_DIR)
-	go build -o $(BUILD_DIR)/$(BINARY_NAME) -v
-
+LINTER := github.com/golangci/golangci-lint/cmd/golangci-lint@v1.54.2
 lint: ## Lint the code
-	golint ./...
+	@echo "Running linter..."
+	@go run $(LINTER) run --verbose ./...
 
 test: ## Run unit tests
-	go test -v ./...
+	@echo "Running tests..."
+	@go test -v ./...
+
+build: lint test ## Build the binary
+	@mkdir -p $(BUILD_DIR)
+	@go build -o $(BUILD_DIR)/$(BINARY_NAME) -v
+	GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/$(BINARY_NAME)-linux-x86_64 .
+	GOOS=linux GOARCH=arm64 go build -o $(BUILD_DIR)/$(BINARY_NAME)-linux-arm64 .
+	GOOS=windows GOARCH=amd64 go build -o $(BUILD_DIR)/$(BINARY_NAME)-windows-amd64.exe .
+	GOOS=darwin GOARCH=amd64 go build -o $(BUILD_DIR)/$(BINARY_NAME)-macos-amd64 .
+	GOOS=darwin GOARCH=arm64 go build -o $(BUILD_DIR)/$(BINARY_NAME)-macos-arm64 .
 
 run: ## Run the application
 	go run main.go $(CMD_ARGS)
 
-release: ## Release the application on github release section
-	gh release create $(GITHUB_RELEASE_VERSION) $(BUILD_DIR)/$(BINARY_NAME) -R $(GITHUB_REPO) -t $(GITHUB_RELEASE_VERSION) -n "Release $(GITHUB_RELEASE_VERSION)"
+release: build ## Release the application on github release section
+	gh release create $(GITHUB_RELEASE_VERSION) \
+		$(BUILD_DIR)/$(BINARY_NAME) \
+		$(BUILD_DIR)/$(BINARY_NAME)-linux-x86_64 \
+		$(BUILD_DIR)/$(BINARY_NAME)-linux-arm64 \
+		$(BUILD_DIR)/$(BINARY_NAME)-windows-amd64.exe \
+		$(BUILD_DIR)/$(BINARY_NAME)-macos-amd64 \
+		$(BUILD_DIR)/$(BINARY_NAME)-macos-arm64 \
+		--repo $(GITHUB_REPO) --title $(GITHUB_RELEASE_VERSION) --notes "Release $(BINARY_NAME) $(GITHUB_RELEASE_VERSION)"
 
 clean: ## Clean the build directory
 	rm -rf $(BUILD_DIR)/*
@@ -49,6 +63,6 @@ docker-stop: ## Stop the docker image
 	docker stop $(DOCKER_CONTAINER_NAME)
 	docker rm $(DOCKER_CONTAINER_NAME)
 
-docker-release: ## Release the docker image on docker hub
+docker-release: docker-build ## Release the docker image on docker hub
 	docker push $(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION)
 	docker push $(DOCKER_IMAGE_NAME):latest
