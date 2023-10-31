@@ -1,0 +1,32 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: geo-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: geo-service
+  template:
+    metadata:
+      labels:
+        app: geo-service
+    spec:
+      containers:
+        - env:
+            - name: GEO_SERVICE_INTERVAL
+              value: '3600'  # This will run once per hour
+            - name: GEO_SERVICE_DOWNLOAD_FOLDER
+              value: /output
+            - name: GEO_SERVICE_DAEMON
+              value: 'true'
+          image: boeboe/geo-service
+          name: geo-service
+          resources:
+            limits:
+              cpu: 500m
+              memory: 256Mi
+            requests:
+              cpu: 250m
+              memory: 64Mi

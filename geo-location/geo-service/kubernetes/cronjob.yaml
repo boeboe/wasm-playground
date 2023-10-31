@@ -1,0 +1,22 @@
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: geo-service-job
+spec:
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - env:
+                - name: GEO_SERVICE_INTERVAL
+                  value: '10'
+                - name: GEO_SERVICE_DOWNLOAD_FOLDER
+                  value: /output
+                - name: GEO_SERVICE_DAEMON
+                  value: 'false'
+              image: boeboe/geo-service
+              name: geo-service
+          restartPolicy: Never
+  schedule: '0 0 * * *'  # This will run once per day at midnight (00:00)
