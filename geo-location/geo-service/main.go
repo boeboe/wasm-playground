@@ -16,7 +16,9 @@ import (
 )
 
 const (
-	scrapeURL       = "https://db-ip.com/db/download/ip-to-country-lite"
+	ipUrl           = "https://db-ip.com/db/download/ip-to-country-lite"
+	cityUrl         = "https://db-ip.com/db/download/ip-to-city-lite"
+	asnUrl          = "https://db-ip.com/db/download/ip-to-asn-lite"
 	linkCSSSelector = "a.btn.btn-block.icon-txt.download.free_download_link"
 )
 
@@ -26,7 +28,7 @@ type Config struct {
 	Interval       int
 }
 
-func getDownloadLinks() ([]string, error) {
+func getGeoDownloadLinks(url string) ([]string, error) {
 	c := colly.NewCollector()
 	var urls []string
 	c.OnHTML(linkCSSSelector, func(e *colly.HTMLElement) {
@@ -36,7 +38,7 @@ func getDownloadLinks() ([]string, error) {
 	c.OnError(func(r *colly.Response, err error) {
 		fmt.Println("Request URL:", r.Request.URL, "failed with response:", r, "\nError:", err)
 	})
-	err := c.Visit(scrapeURL)
+	err := c.Visit(url)
 	if err != nil {
 		return nil, err
 	}
@@ -139,30 +141,34 @@ func main() {
 		ticker := time.NewTicker(time.Duration(config.Interval) * time.Second)
 		defer ticker.Stop()
 		for range ticker.C {
-			urls, err := getDownloadLinks()
-			if err != nil {
-				fmt.Println("Error getting download links:", err)
-				continue
-			}
-			fmt.Println("Download URLs:")
-			for _, url := range urls {
-				err := downloadAndExtractFile(url, config.DownloadFolder)
+			for _, sUrl := range []string{ipUrl, cityUrl, asnUrl} {
+				dUrls, err := getGeoDownloadLinks(sUrl)
 				if err != nil {
-					fmt.Println("Error downloading or extracting file:", err)
+					fmt.Println("Error getting download links:", err)
+					continue
+				}
+				fmt.Println("Download URLs:")
+				for _, dUrl := range dUrls {
+					err := downloadAndExtractFile(dUrl, config.DownloadFolder)
+					if err != nil {
+						fmt.Println("Error downloading or extracting file:", err)
+					}
 				}
 			}
 		}
 	} else {
-		urls, err := getDownloadLinks()
-		if err != nil {
-			fmt.Println("Error getting download links:", err)
-			return
-		}
-		fmt.Println("Download URLs:")
-		for _, url := range urls {
-			err := downloadAndExtractFile(url, config.DownloadFolder)
+		for _, sUrl := range []string{ipUrl, cityUrl, asnUrl} {
+			dUrls, err := getGeoDownloadLinks(sUrl)
 			if err != nil {
-				fmt.Println("Error downloading or extracting file:", err)
+				fmt.Println("Error getting download links:", err)
+				return
+			}
+			fmt.Println("Download URLs:")
+			for _, dUrl := range dUrls {
+				err := downloadAndExtractFile(dUrl, config.DownloadFolder)
+				if err != nil {
+					fmt.Println("Error downloading or extracting file:", err)
+				}
 			}
 		}
 	}

@@ -2,6 +2,13 @@
 
 The `geo-service` is a Go program that provides functionality to download and extract GeoIP database files from db-ip.com. It can run in both daemon mode (continuous) and one-time mode, allowing you to customize its behavior according to your needs.
 
+The following databases are downloaded and extracted:
+ - IP to Country Lite Database [ref](https://db-ip.com/db/download/ip-to-country-lite)
+ - IP to City Lite Database [ref](https://db-ip.com/db/download/ip-to-city-lite)
+ - IP to ASN Lite Database [ref](https://db-ip.com/db/download/ip-to-asn-lite)
+
+Both CSV and MMDB formats are available.
+
 ## Table of Contents
 
 - [Overview](#overview)
